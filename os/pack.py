@@ -23,7 +23,7 @@ _app_num:
 '''
     .global _app_names
 _app_names:
-''');
+''')
 
     for app in apps:
         app = app[:app.find('.')]

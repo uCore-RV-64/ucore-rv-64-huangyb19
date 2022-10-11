@@ -3,6 +3,7 @@
 
 void *memset(void *dst, int c, uint n)
 {
+	// 将dst强制类型转换成char*类型后，赋值都是按字节进行的
 	char *cdst = (char *)dst;
 	int i;
 	for (i = 0; i < n; i++) {
@@ -33,15 +34,16 @@ void *memmove(void *dst, const void *src, uint n)
 
 	s = src;
 	d = dst;
+	// d和s的地址有重叠
 	if (s < d && s + n > d) {
 		s += n;
 		d += n;
 		while (n-- > 0)
-			*--d = *--s;
+			*--d = *--s;  // *(--d) = *(--s)
+	// 没有重叠
 	} else
 		while (n-- > 0)
-			*d++ = *s++;
-
+			*d++ = *s++;  // *(d++) = *(s++)
 	return dst;
 }
 

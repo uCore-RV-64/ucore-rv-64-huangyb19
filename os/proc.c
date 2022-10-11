@@ -2,11 +2,13 @@
 #include "defs.h"
 #include "loader.h"
 #include "trap.h"
+#include "timer.h"
 
 struct proc pool[NPROC];
 char kstack[NPROC][PAGE_SIZE];
 __attribute__((aligned(4096))) char ustack[NPROC][PAGE_SIZE];
 __attribute__((aligned(4096))) char trapframe[NPROC][PAGE_SIZE];
+__attribute__((aligned(4096))) char taskinfo[NPROC][PAGE_SIZE];
 
 extern char boot_stack_top[];
 struct proc *current_proc;
@@ -34,6 +36,8 @@ void proc_init(void)
 		/*
 		* LAB1: you may need to initialize your new fields of proc here
 		*/
+		p->taskinfo = (struct TaskInfo *)taskinfo[p - pool];
+		p->taskinfo->status = UnInit;
 	}
 	idle.kstack = (uint64)boot_stack_top;
 	idle.pid = 0;
@@ -67,6 +71,8 @@ found:
 	memset((void *)p->kstack, 0, PAGE_SIZE);
 	p->context.ra = (uint64)usertrapret;
 	p->context.sp = p->kstack + PAGE_SIZE;
+	// taskinfo分配空间的初值设为0
+	memset(p->taskinfo, 0, PAGE_SIZE);
 	return p;
 }
 
@@ -87,6 +93,14 @@ void scheduler(void)
 				p->state = RUNNING;
 				current_proc = p;
 				swtch(&idle.context, &p->context);
+				
+				p->taskinfo->status = RUNNING;
+				// 该任务是否是首次被调度
+				if (p->is_first_sched == 0) {
+					p->is_first_sched = 1;
+					uint64 cycle = get_cycle();
+					p->start_time = (cycle / CPU_FREQ) * 1000 + (cycle % CPU_FREQ) * 1000 / CPU_FREQ;
+				}
 			}
 		}
 	}

@@ -15,7 +15,7 @@ int finished()
 	return 0;
 }
 
-// Get user progs' infomation through pre-defined symbol in `link_app.S`
+// Get user progs' information through pre-defined symbol in `link_app.S`
 void loader_init()
 {
 	if ((uint64)ekernel >= BASE_ADDRESS) {
@@ -51,6 +51,7 @@ int run_all_app()
 		/*
 		* LAB1: you may need to initialize your new fields of proc here
 		*/
+		p->taskinfo->status = Ready;
 	}
 	return 0;
 }

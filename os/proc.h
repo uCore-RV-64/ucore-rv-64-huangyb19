@@ -4,6 +4,7 @@
 #include "types.h"
 
 #define NPROC (16)
+#define MAX_SYSCALL_NUM (500)  // 系统调用号取500
 
 // Saved registers for kernel context switches.
 struct context {
@@ -27,6 +28,22 @@ struct context {
 
 enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
+/*
+* LAB1: you may need to define struct for TaskInfo here
+*/
+typedef enum {
+	UnInit,
+	Ready,
+	Running,
+	Exited,
+} TaskStatus;
+
+typedef struct TaskInfo{
+	TaskStatus status;  // 当前任务状态
+	unsigned int syscall_times[MAX_SYSCALL_NUM];  // 当前进程使用的各种系统调用的次数
+    int time;  // 当前任务的总运行时长(从第一次执行该任务起到现在的时长),单位是ms
+}TaskInfo;
+
 // Per-process state
 struct proc {
 	enum procstate state; // Process state
@@ -38,11 +55,10 @@ struct proc {
 	/*
 	* LAB1: you may need to add some new fields here
 	*/
+	struct TaskInfo *taskinfo;
+	int is_first_sched; // 记录当前任务是否至少被调度过1次
+	int start_time;  // 记录当前任务首次被调度的时刻
 };
-
-/*
-* LAB1: you may need to define struct for TaskInfo here
-*/
 
 struct proc *curr_proc();
 void exit(int);
